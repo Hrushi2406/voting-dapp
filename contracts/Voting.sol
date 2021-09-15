@@ -42,7 +42,6 @@ contract Voting {
         require(!isResultAnnounced, "Cannot vote after result announcement");
         // Check if voter has already voted
         require(!voters[msg.sender], "You have already voted");
-
         // If true then vote for A else B
         if (isA) {
             countA++;

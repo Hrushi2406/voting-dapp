@@ -26,7 +26,7 @@ function App() {
 
       console.log("Result", result);
     } catch (error) {
-      formateError(error);
+      console.log("Error", formateError(error));
     }
   };
 
