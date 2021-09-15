@@ -2,19 +2,38 @@ import React, { useState } from "react";
 import Voting from "./contracts/Voting.json";
 import "./App.css";
 import useContract from "./component/use_contract";
+import formateError from "./component/format_error";
 
 function App() {
   const { web3, contract, accounts } = useContract(Voting);
+
+  const [error, seterror] = useState("");
 
   //CURRENTLY SELECTED OPTION
   const [voteOption, setvoteOption] = useState();
 
   const handleSubmit = async () => {
     try {
+      if (checkIfUserAlreadyVoted()) {
+        seterror("User has already voted for this program");
+        setTimeout(() => seterror(""), 2500);
+        return;
+      }
+
       let result = await contract.methods
-        .vote(voteOption == 0)
+        .vote(voteOption === 0)
         .send({ from: accounts[0] });
+
       console.log("Result", result);
+    } catch (error) {
+      formateError(error);
+    }
+  };
+
+  const checkIfUserAlreadyVoted = async () => {
+    if (!web3) return;
+    try {
+      return await contract.methods.voters(accounts[0]).call();
     } catch (error) {
       console.log("Error ", error);
     }
@@ -51,6 +70,8 @@ function App() {
       <button className="btn " onClick={handleSubmit}>
         Vote
       </button>
+
+      <h4 style={{ color: "red" }}>{error}</h4>
     </div>
   );
 }

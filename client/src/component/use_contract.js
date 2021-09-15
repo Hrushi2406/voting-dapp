@@ -31,8 +31,6 @@ const useContract = (contract) => {
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = contract.networks[networkId];
 
-      console.log(contract.networks);
-
       const newInstance = new web3.eth.Contract(
         contract.abi,
         deployedNetwork.address
