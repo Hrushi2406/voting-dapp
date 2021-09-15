@@ -1,15 +1,24 @@
 import React, { useState } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import Voting from "./contracts/Voting.json";
 import "./App.css";
 import useContract from "./component/use_contract";
 
 function App() {
-  const { web3, contract, accounts } = useContract(SimpleStorageContract);
+  const { web3, contract, accounts } = useContract(Voting);
 
   //CURRENTLY SELECTED OPTION
   const [voteOption, setvoteOption] = useState();
 
-  const handleSubmit = () => {};
+  const handleSubmit = async () => {
+    try {
+      let result = await contract.methods
+        .vote(voteOption == 0)
+        .send({ from: accounts[0] });
+      console.log("Result", result);
+    } catch (error) {
+      console.log("Error ", error);
+    }
+  };
 
   if (!web3) {
     return <div>Loading Web3, accounts, and contract...</div>;
