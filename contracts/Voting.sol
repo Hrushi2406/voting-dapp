@@ -3,13 +3,15 @@ pragma solidity ^0.8.6;
 
 contract Voting {
     address public owner;
-    uint public countA;
-    uint public countB;
+    uint256 public countA;
+    uint256 public countB;
     string public title;
     string public description;
     bool public isResultDeclared;
+
     mapping(address => bool) public voters;
-    event ResultAnnounced(uint countA, uint countB);
+
+    event ResultAnnounced(uint256 countA, uint256 countB);
 
     constructor(string memory _title, string memory _description) {
         // require(_title != "", "No title provided");
@@ -23,9 +25,9 @@ contract Voting {
         require(!isResultDeclared, "Can't vote after result announcement");
         require(!voters[msg.sender], "You have already voted");
         voters[msg.sender] = true;
-        if(isA) {
+        if (isA) {
             countA++;
-        } else{
+        } else {
             countB++;
         }
     }

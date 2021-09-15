@@ -1,26 +1,32 @@
 import { useState, useEffect } from "react";
-import useWeb3, { getWeb3 } from "./use_web3";
+import { getWeb3 } from "./use_web3";
 
 const useContract = (contract) => {
-  const [web3, setweb3] = useState();
-
-  const [instance, setinstance] = useState();
-
-  const initiate = async () => {
-    let a = await getWeb3();
-
-    setweb3(a);
-    createInstance();
+  const initialState = {
+    web3: null,
+    accounts: null,
+    contract: null,
   };
 
-  console.log("Something");
+  const [state, setstate] = useState(initialState);
+
+  const initiate = async () => {
+    if (state.web3) return;
+
+    const web3 = await getWeb3();
+
+    const accounts = await web3.eth.getAccounts();
+
+    const contract = await createInstance(web3);
+
+    setstate({ ...state, web3, accounts, contract });
+  };
 
   useEffect(() => {
     initiate();
-    // if (!instance) createInstance();
-  }, []);
+  });
 
-  async function createInstance() {
+  async function createInstance(web3) {
     if (web3) {
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = contract.networks[networkId];
@@ -30,11 +36,11 @@ const useContract = (contract) => {
         deployedNetwork && deployedNetwork.address
       );
 
-      setinstance(newInstance);
+      return newInstance;
     }
   }
 
-  return { web3, instance };
+  return state;
 };
 
 export default useContract;

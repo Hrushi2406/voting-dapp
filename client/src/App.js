@@ -1,50 +1,47 @@
-import React, { Component, useEffect, useState } from "react";
+import React, { useState } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import "./App.css";
 import useContract from "./component/use_contract";
 
-import useWeb3 from "./component/use_web3";
-import Store from "./component/store";
-
 function App() {
-  // const web3 = useWeb3();
+  const { web3, contract, accounts } = useContract(SimpleStorageContract);
 
-  // const { web3, instance: contract } = useContract(SimpleStorageContract);
+  //CURRENTLY SELECTED OPTION
+  const [voteOption, setvoteOption] = useState();
 
-  // const { web3, instance: contract } = Store.web3;
+  const handleSubmit = () => {};
 
-  const [accounts, setaccounts] = useState();
-
-  async function getAccounts() {
-    console.log(contract);
-    if (web3) {
-      let accounts = await web3.eth.getAccounts();
-      setaccounts(accounts);
-    }
+  if (!web3) {
+    return <div>Loading Web3, accounts, and contract...</div>;
   }
-
-  console.log(web3);
-
-  useEffect(() => {
-    getAccounts();
-  }, [contract]);
-
-  // if (!web3) {
-  //   return <div>Loading Web3, accounts, and contract...</div>;
-  // }
   return (
     <div className="App">
-      <h1>Good to Go!</h1>
-      <p>Your Truffle Box is installed and ready.</p>
-      <h2>Smart Contract Example</h2>
-      <p>
-        If your contracts compiled and migrated successfully, below will show a
-        stored value of 5 (by default).
-      </p>
-      <p>
-        Try changing the value stored on <strong>line 42</strong> of App.js.
-      </p>
-      <div>The stored value is: {accounts}</div>
+      <h2>Title of Voting</h2>
+      <h5>Voting account {accounts[0]}</h5>
+
+      <div className="spacer"></div>
+
+      <div className="options-parent">
+        <div
+          className={voteOption === 0 ? "options-div selected" : "options-div"}
+          onClick={() => setvoteOption(0)}
+        >
+          <h5>Option 1</h5>
+        </div>
+
+        <div
+          className={voteOption === 1 ? "options-div selected" : "options-div"}
+          onClick={() => setvoteOption(1)}
+        >
+          <h5>Option 2</h5>
+        </div>
+      </div>
+
+      <div className="spacer"></div>
+
+      <button className="btn " onClick={handleSubmit}>
+        Vote
+      </button>
     </div>
   );
 }
