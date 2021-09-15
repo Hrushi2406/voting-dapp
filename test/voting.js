@@ -1,10 +1,15 @@
 const Voting = artifacts.require("./Voting.sol");
+var chai = require("chai");
+should = chai.should();
 
 contract("Voting", (accounts) => {
   let votingInstance;
 
   beforeEach("Deploys contract", async () => {
-    votingInstance = await Voting.new("Title", "Description");
+    // Deploy new contract before each test
+    votingInstance = await Voting.new("Title", "Description", {
+      from: accounts[0],
+    });
   });
 
   it("Stores owner, title and description", async () => {
@@ -12,41 +17,74 @@ contract("Voting", (accounts) => {
     const storedTitle = await votingInstance.title.call();
     const storedDescription = await votingInstance.description.call();
 
-    assert.equal(owner, accounts[0], "Owner was not first account");
-    assert.equal(storedTitle, "Title", "Title was not stored");
-    assert.equal(
-      storedDescription,
-      "Description",
-      "Description was not stored"
-    );
+    // Check if initial data stored
+    owner.should.equal(accounts[0], `Owner is not stored`);
+    storedTitle.should.equal("Title", "Title does not match");
+    storedDescription.should.equal("Description", "Description does not match");
   });
 
   it("Can vote", async () => {
     // const prevCount = await votingInstance.count;
     const prevCount = await votingInstance.countA.call();
+
     // True means vote for A
     await votingInstance.vote(true, { from: accounts[1] });
-
-    const hasVoted = await votingInstance.voters.call(accounts[1]);
-
     const afterCount = await votingInstance.countA.call();
 
-    assert.equal(hasVoted, true, "Vote wasn't casted");
-    assert.equal(
-      prevCount.toNumber() + 1,
+    // Check if vote count is increased
+    (prevCount.toNumber() + 1).should.equal(
       afterCount.toNumber(),
-      "Vote count wasn't raised"
+      "Count is not raised"
     );
   });
 
   it("Owner can announce result", async () => {
-    await votingInstance.announceResult();
-    const isResultAnnounced = await votingInstance.isResultAnnounced.call();
+    const transaction = await votingInstance.announceResult({
+      from: accounts[0],
+    });
 
-    assert.equal(isResultAnnounced, true, "Result announcement failed");
+    // Access logs from transaction
+    const { logs } = transaction;
+    assert.ok(Array.isArray(logs), "logs is not an array");
+    logs.length.should.equal(1, "Multiple events are emitted");
+
+    // Access events from logs
+    const log = logs[0];
+    log.event.should.equal("ResultAnnounced", "Incorrect event was emitted");
+    log.args.countA.toNumber().should.equal(0, "Count A does not match");
+    log.args.countB.toNumber().should.equal(0, "Count B does not match");
+
+    // Check if flag set
+    const isResultAnnounced = await votingInstance.isResultAnnounced.call();
+    isResultAnnounced.should.equal(true, "Result flag not set");
   });
 
-  it("Only owner can announce result", async () => {});
-  it("Same address can't vote twice", async () => {});
-  it("Can't vote after results announced", async () => {});
+  it("Only owner should announce result", async () => {
+    try {
+      // Try announcing results from non-owner account
+      await votingInstance.announceResult({ from: accounts[1] });
+    } catch (err) {
+      err.toString().should.include("Only owner can announce result");
+    }
+  });
+
+  it("Same address can't vote twice", async () => {
+    await votingInstance.vote(true, { from: accounts[1] });
+    try {
+      // Vote again
+      await votingInstance.vote(true, { from: accounts[1] });
+    } catch (err) {
+      err.toString().should.include("You have already voted");
+    }
+  });
+
+  it("Can't vote after results announced", async () => {
+    await votingInstance.announceResult({ from: accounts[0] });
+    try {
+      // Vote after results are announced
+      await votingInstance.vote(true, { from: accounts[1] });
+    } catch (err) {
+      err.toString().should.include("Cannot vote after result announcement");
+    }
+  });
 });
