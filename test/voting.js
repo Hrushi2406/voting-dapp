@@ -24,7 +24,6 @@ contract('Voting', (accounts) => {
   });
 
   it('Can vote', async () => {
-    // const prevCount = await votingInstance.count;
     const prevState = await votingInstance.optionCounts.call(0);
 
     // Vote for index 0 from account 1

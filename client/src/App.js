@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Voting from './contracts/Voting.json';
 import './App.css';
 import useContract from './component/use_contract';
@@ -11,6 +11,22 @@ function App() {
 
   //CURRENTLY SELECTED OPTION
   const [voteOption, setvoteOption] = useState();
+  const [programData, setProgramData] = useState();
+
+  // useEffect(async () => {
+  //   // Set Title and Description
+  //   const title = await contract.title.call();
+  //   const description = await contract.description.call();
+  //   const nOptions = await contract.nOptions.call();
+  //   // Set options
+  //   let tempList = [];
+  //   for (let i = 0; i < nOptions; i++) {
+  //     let option = await contract.optionCounts(i).call();
+  //     option.index = i;
+  //     tempList.push(option);
+  //   }
+  //   setProgramData({ title: title, description: description, nOptions: nOptions, optionList: tempList });
+  // }, []);
 
   const handleSubmit = async () => {
     try {
@@ -42,7 +58,8 @@ function App() {
   }
   return (
     <div className="App">
-      <h2>Title of Voting</h2>
+      <h2>{programData.title ?? 'Title here'}</h2>
+      <h5>{programData.description ?? 'Description here'}</h5>
       <h5>Voting account {accounts[0]}</h5>
 
       <div className="spacer"></div>
