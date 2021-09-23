@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import Voting from "./contracts/Voting.json";
-import "./App.css";
-import useContract from "./component/use_contract";
-import formateError from "./component/format_error";
+import React, { useState } from 'react';
+import Voting from './contracts/Voting.json';
+import './App.css';
+import useContract from './component/use_contract';
+import formateError from './component/format_error';
 
 function App() {
   const { web3, contract, accounts } = useContract(Voting);
 
-  const [error, seterror] = useState("");
+  const [error, seterror] = useState('');
 
   //CURRENTLY SELECTED OPTION
   const [voteOption, setvoteOption] = useState();
@@ -15,18 +15,16 @@ function App() {
   const handleSubmit = async () => {
     try {
       if (checkIfUserAlreadyVoted()) {
-        seterror("User has already voted for this program");
-        setTimeout(() => seterror(""), 2500);
+        seterror('User has already voted for this program');
+        setTimeout(() => seterror(''), 2500);
         return;
       }
 
-      let result = await contract.methods
-        .vote(voteOption === 0)
-        .send({ from: accounts[0] });
+      let result = await contract.methods.vote(voteOption === 0).send({ from: accounts[0] });
 
-      console.log("Result", result);
+      console.log('Result', result);
     } catch (error) {
-      console.log("Error", formateError(error));
+      console.log('Error', formateError(error));
     }
   };
 
@@ -35,7 +33,7 @@ function App() {
     try {
       return await contract.methods.voters(accounts[0]).call();
     } catch (error) {
-      console.log("Error ", error);
+      console.log('Error ', error);
     }
   };
 
@@ -50,17 +48,11 @@ function App() {
       <div className="spacer"></div>
 
       <div className="options-parent">
-        <div
-          className={voteOption === 0 ? "options-div selected" : "options-div"}
-          onClick={() => setvoteOption(0)}
-        >
+        <div className={voteOption === 0 ? 'options-div selected' : 'options-div'} onClick={() => setvoteOption(0)}>
           <h5>Option 1</h5>
         </div>
 
-        <div
-          className={voteOption === 1 ? "options-div selected" : "options-div"}
-          onClick={() => setvoteOption(1)}
-        >
+        <div className={voteOption === 1 ? 'options-div selected' : 'options-div'} onClick={() => setvoteOption(1)}>
           <h5>Option 2</h5>
         </div>
       </div>
@@ -71,7 +63,7 @@ function App() {
         Vote
       </button>
 
-      <h4 style={{ color: "red" }}>{error}</h4>
+      <h4 style={{ color: 'red' }}>{error}</h4>
     </div>
   );
 }
