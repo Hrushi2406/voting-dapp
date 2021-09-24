@@ -8,25 +8,35 @@ function App() {
   const { web3, contract, accounts } = useContract(Voting);
 
   const [error, seterror] = useState('');
+  const [isLoading, setLoading] = useState(false);
 
-  //CURRENTLY SELECTED OPTION
+  // Program data
+  const [programData, setProgramData] = useState({ title: '', description: '', nOptions: 0, optionList: [] });
+  //Currently Selected Option
   const [voteOption, setvoteOption] = useState();
-  const [programData, setProgramData] = useState();
 
-  // useEffect(async () => {
-  //   // Set Title and Description
-  //   const title = await contract.title.call();
-  //   const description = await contract.description.call();
-  //   const nOptions = await contract.nOptions.call();
-  //   // Set options
-  //   let tempList = [];
-  //   for (let i = 0; i < nOptions; i++) {
-  //     let option = await contract.optionCounts(i).call();
-  //     option.index = i;
-  //     tempList.push(option);
-  //   }
-  //   setProgramData({ title: title, description: description, nOptions: nOptions, optionList: tempList });
-  // }, []);
+  async function fetchData() {
+    if (contract != null) {
+      setLoading(true);
+      // Set Title and Description
+      const title = await contract.methods.title().call();
+      const description = await contract.methods.description().call();
+      const nOptions = await contract.methods.nOptions().call();
+      // Set options
+      let tempList = [];
+      for (let i = 0; i < nOptions; i++) {
+        let option = await contract.methods.optionCounts(i).call();
+        option.index = i;
+        tempList.push(option);
+      }
+      setProgramData({ title: title, description: description, nOptions: nOptions, optionList: tempList });
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, [contract]);
 
   const handleSubmit = async () => {
     try {
@@ -56,10 +66,13 @@ function App() {
   if (!web3) {
     return <div>Loading Web3, accounts, and contract...</div>;
   }
+  if (isLoading) {
+    return <div>Loading contract data</div>;
+  }
   return (
     <div className="App">
-      <h2>{programData.title ?? 'Title here'}</h2>
-      <h5>{programData.description ?? 'Description here'}</h5>
+      <h2>{programData.title}</h2>
+      <h5>{programData.description}</h5>
       <h5>Voting account {accounts[0]}</h5>
 
       <div className="spacer"></div>
