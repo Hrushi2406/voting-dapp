@@ -1,17 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import Voting from './contracts/Voting.json';
-import './App.css';
-import useContract from './component/use_contract';
-import formateError from './component/format_error';
+import React, { useEffect, useState } from "react";
+import Voting from "./contracts/Voting.json";
+import "./App.css";
+import useContract from "./component/use_contract";
+import formateError from "./component/format_error";
 
 function App() {
-  const { web3, contract, accounts } = useContract(Voting);
+  const { web3, contract, accounts, errors } = useContract(Voting);
 
-  const [error, seterror] = useState('');
+  const [error, seterror] = useState("");
   const [isLoading, setLoading] = useState(false);
 
   // Program data
-  const [programData, setProgramData] = useState({ title: '', description: '', nOptions: 0, optionList: [] });
+  const [programData, setProgramData] = useState({
+    title: "",
+    description: "",
+    nOptions: 0,
+    optionList: [],
+  });
   //Currently Selected Option
   const [voteOption, setvoteOption] = useState();
 
@@ -22,6 +27,9 @@ function App() {
       const title = await contract.methods.title().call();
       const description = await contract.methods.description().call();
       const nOptions = await contract.methods.nOptions().call();
+      const maxVotes = await contract.methods.maxVotes().call();
+      const maxVotesIndex = await contract.methods.maxVotesIndex().call();
+
       // Set options
       let tempList = [];
       for (let i = 0; i < nOptions; i++) {
@@ -29,7 +37,17 @@ function App() {
         option.index = i;
         tempList.push(option);
       }
-      setProgramData({ title: title, description: description, nOptions: nOptions, optionList: tempList });
+
+      console.log(
+        "MAX VOTES " + maxVotes + " FOR " + tempList[maxVotesIndex].name
+      );
+
+      setProgramData({
+        title: title,
+        description: description,
+        nOptions: nOptions,
+        optionList: tempList,
+      });
       setLoading(false);
     }
   }
@@ -40,17 +58,20 @@ function App() {
 
   const handleSubmit = async () => {
     try {
-      if (checkIfUserAlreadyVoted()) {
-        seterror('User has already voted for this program');
-        setTimeout(() => seterror(''), 2500);
+      if (await checkIfUserAlreadyVoted()) {
+        seterror("User has already voted for this program");
+        setTimeout(() => seterror(""), 2500);
         return;
       }
 
-      let result = await contract.methods.vote(voteOption === 0).send({ from: accounts[0] });
+      let result = await contract.methods
+        .vote(voteOption)
+        .send({ from: accounts[0] });
 
-      console.log('Result', result);
+      console.log("Result", result);
     } catch (error) {
-      console.log('Error', formateError(error));
+      console.log("Error", formateError(error));
+      seterror(formateError(error));
     }
   };
 
@@ -59,9 +80,14 @@ function App() {
     try {
       return await contract.methods.voters(accounts[0]).call();
     } catch (error) {
-      console.log('Error ', error);
+      console.log("Error ", error);
     }
   };
+
+  if (errors) {
+    alert(errors);
+    return <div></div>;
+  }
 
   if (!web3) {
     return <div>Loading Web3, accounts, and contract...</div>;
@@ -78,13 +104,17 @@ function App() {
       <div className="spacer"></div>
 
       <div className="options-parent">
-        <div className={voteOption === 0 ? 'options-div selected' : 'options-div'} onClick={() => setvoteOption(0)}>
-          <h5>Option 1</h5>
-        </div>
-
-        <div className={voteOption === 1 ? 'options-div selected' : 'options-div'} onClick={() => setvoteOption(1)}>
-          <h5>Option 2</h5>
-        </div>
+        {programData.optionList.map((option, index) => (
+          <div
+            key={index}
+            className={
+              voteOption === index ? "options-div selected" : "options-div"
+            }
+            onClick={() => setvoteOption(index)}
+          >
+            <h5>{option.name}</h5>
+          </div>
+        ))}
       </div>
 
       <div className="spacer"></div>
@@ -93,7 +123,7 @@ function App() {
         Vote
       </button>
 
-      <h4 style={{ color: 'red' }}>{error}</h4>
+      <h4 style={{ color: "red" }}>{error}</h4>
     </div>
   );
 }

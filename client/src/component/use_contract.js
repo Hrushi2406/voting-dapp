@@ -6,6 +6,7 @@ const useContract = (contract) => {
     web3: null,
     accounts: null,
     contract: null,
+    errors: null,
   };
 
   const [state, setstate] = useState(initialState);
@@ -13,13 +14,18 @@ const useContract = (contract) => {
   const initiate = async () => {
     if (state.web3) return;
 
-    const web3 = await getWeb3();
+    try {
+      const web3 = await getWeb3();
 
-    const accounts = await web3.eth.getAccounts();
+      const accounts = await web3.eth.getAccounts();
 
-    const contract = await createInstance(web3);
+      const contract = await createInstance(web3);
 
-    setstate({ ...state, web3, accounts, contract });
+      setstate({ ...state, web3, accounts, contract });
+    } catch (e) {
+      console.log("useContrat Error ", e);
+      setstate({ ...state, errors: e });
+    }
   };
 
   useEffect(() => {
@@ -31,12 +37,16 @@ const useContract = (contract) => {
       const networkId = await web3.eth.net.getId();
       const deployedNetwork = contract.networks[networkId];
 
-      const newInstance = new web3.eth.Contract(
-        contract.abi,
-        deployedNetwork.address
-      );
+      if (deployedNetwork) {
+        const newInstance = new web3.eth.Contract(
+          contract.abi,
+          deployedNetwork.address
+        );
 
-      return newInstance;
+        return newInstance;
+      } else {
+        throw "Use Correct Network";
+      }
     }
   }
 
