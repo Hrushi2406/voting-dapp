@@ -1,5 +1,4 @@
 const Application = artifacts.require("./Application.sol");
-const Election = artifacts.require("./Election.sol");
 
 contract("Application", (accounts) => {
     let applicationInstance;
@@ -30,29 +29,23 @@ contract("Application", (accounts) => {
         }
     });
 
-    it("Stores election data ", async () => {
-        // Get address of election contract deployed in last test
-        const electionAddress = await applicationInstance.elections.call(0);
+    it("Can't create election with empty title or description", async () => {
+        try {
+            // Create election with empty title or description
+            await applicationInstance.createElection("", "", ["A", "B", "C"], { from: accounts[1] });
+            assert.isTrue(false, "Election contract gets deployed successfully")
+        } catch (err) {
+            assert.include(err.toString(), "Title or Description can't be empty")
+        }
+    });
 
-        // Access Election contract instance at electionAddress
-        const electionInstance = await Election.at(electionAddress);
-
-        // Fetch stored data
-        const owner = await electionInstance.owner.call();
-        const storedTitle = await electionInstance.title.call();
-        const storedDescription = await electionInstance.description.call();
-        const nOptions = await electionInstance.nOptions.call();
-        const storedOption = await electionInstance.optionCounts.call(0);
-
-        // Check if stored data matches passed data
-        assert.equal(owner, accounts[1], "Owner does not match");
-        assert.equal(storedTitle, "Voting 201", "Title does not match");
-        assert.equal(
-            storedDescription,
-            "This is voting 201",
-            "Description does not match"
-        );
-        assert.equal(nOptions, 3, "No of options does not tally");
-        assert.equal(storedOption.name, "A", "First option does not match");
+    it("Can't create election with empty options", async () => {
+        try {
+            // Create election with empty title or description
+            await applicationInstance.createElection("Voting 301", "This is voting 301", ["", "B", ""], { from: accounts[1] });
+            assert.isTrue(false, "Election contract gets deployed successfully")
+        } catch (err) {
+            assert.include(err.toString(), "Options can't be empty")
+        }
     });
 });

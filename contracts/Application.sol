@@ -26,6 +26,26 @@ contract Application {
         string memory _description,
         string[] memory _options
     ) public {
+        bytes32 emptyHash = keccak256(bytes(""));
+
+        // To check _title is not empty string
+        require(
+            keccak256(bytes(_title)) != emptyHash,
+            "Title or Description can't be empty"
+        );
+        // To check _description is not empty string
+        require(
+            keccak256(bytes(_description)) != emptyHash,
+            "Title or Description can't be empty"
+        );
+        // To check _options is not empty string
+        for (uint256 i = 0; i < _options.length; i++) {
+            require(
+                keccak256(bytes(_options[i])) != emptyHash,
+                "Options can't be empty"
+            );
+        }
+
         // Create and deploy contract
         Election _election = new Election(
             msg.sender,
