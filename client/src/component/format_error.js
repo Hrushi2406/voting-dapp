@@ -3,7 +3,7 @@ const formateError = (error) => {
 
   let i = error.message.indexOf('revert');
   let message = error.message.slice(i + 7);
-  let j = message.indexOf('"');
+  // let j = message.indexOf('"');
   let errMessage = message.split('"')[0];
 
   return errMessage;

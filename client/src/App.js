@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import Voting from "./contracts/Voting.json";
+import Election from "./contracts/Election.json";
 import "./App.css";
 import useContract from "./component/use_contract";
 import formateError from "./component/format_error";
 
 function App() {
-  const { web3, contract, accounts, errors } = useContract(Voting);
+  const { web3, contract, accounts, errors } = useContract(Election);
 
   const [error, seterror] = useState("");
   const [isLoading, setLoading] = useState(false);
