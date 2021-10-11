@@ -1,0 +1,66 @@
+nav {
+    height: 60px;
+    width: 100%;
+    background-color: var(--secondary);
+    padding: 0% var(--body-padding);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    font-size: 2.5rem;
+    font-weight: 600;
+    z-index: 2;
+}
+
+.nav-btn-flex {
+    display: flex;
+    z-index: 2;
+    button {
+        font-size: 1rem;
+    }
+}
+
+.nav-add-btn {
+    width: 3rem;
+    position: relative;
+    cursor: pointer;
+
+    .line {
+        position: absolute;
+        width: 2.5rem;
+        height: 2.5px;
+        background-color: black;
+        transform-origin: center;
+        transition: transform 250ms linear;
+    }
+
+    .l1 {
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .l2 {
+        top: 50%;
+        transform: translate(0%, -50%) rotate(90deg);
+    }
+}
+
+.nav-add-btn-c {
+    display: flex;
+    position: relative;
+    justify-content: center;
+
+    .line-c {
+      position: absolute;
+    }
+
+    .l1-c {
+      transform: rotate(-135deg);
+    }
+
+    .l2-c {
+      transform: rotate(-45deg);
+    }
+}

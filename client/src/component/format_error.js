@@ -1,4 +1,4 @@
-const formateError = (error) => {
+const formatError = (error) => {
   if (error.code === 4001) return error.message;
 
   let i = error.message.indexOf('revert');
@@ -9,4 +9,4 @@ const formateError = (error) => {
   return errMessage;
 };
 
-export default formateError;
+export default formatError;

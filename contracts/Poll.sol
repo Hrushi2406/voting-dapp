@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
-contract Election {
+contract Poll {
     // Address that creates voting program
     address public owner;
 
@@ -34,6 +34,9 @@ contract Election {
 
     // Current max votes to any option
     uint256 public maxVotes = 0;
+
+    // Total votes
+    uint256 public totalVotes = 0;
 
     // Emitted when results are announced successfully
     event ResultAnnounced(Option winnerOption, uint256 maxVotes);
@@ -70,6 +73,8 @@ contract Election {
         }
         // Mark as voted
         voters[msg.sender] = true;
+        // Increase total votes
+        totalVotes++;
     }
 
     // Function to announce results which can be called by only owner

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { getWeb3 } from "./use_web3";
+import { getWeb3 } from "./get_web3";
+import Application from "../contracts/Application.json";
 
-const useContract = (contract) => {
+const useContract = () => {
   const initialState = {
     web3: null,
     accounts: null,
-    contract: null,
+    appContract: null,
     errors: null,
   };
 
@@ -19,11 +20,11 @@ const useContract = (contract) => {
 
       const accounts = await web3.eth.getAccounts();
 
-      const contract = await createInstance(web3);
+      const appContract = await createAppInstance(web3);
 
-      setstate({ ...state, web3, accounts, contract });
+      setstate({ ...state, web3, accounts, appContract });
     } catch (e) {
-      console.log("useContrat Error ", e);
+      console.log("useContract Error ", e);
       setstate({ ...state, errors: e });
     }
   };
@@ -32,14 +33,14 @@ const useContract = (contract) => {
     initiate();
   });
 
-  async function createInstance(web3) {
+  async function createAppInstance(web3) {
     if (web3) {
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = contract.networks[networkId];
+      const deployedNetwork = Application.networks[networkId];
 
       if (deployedNetwork) {
         const newInstance = new web3.eth.Contract(
-          contract.abi,
+          Application.abi,
           deployedNetwork.address
         );
 

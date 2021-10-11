@@ -1,0 +1,37 @@
+.label {
+    font-size: var(--sm-content-size);
+    margin-bottom: 1rem;
+}
+  
+.textbox,
+.textarea {
+    height: 4rem;
+    width: 100%;
+    padding-left: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0.6rem;
+    background-color: white;
+    border: 1px solid var(--secondary);
+    font-size: var(--sm-content-size);
+}
+  
+.textarea {
+    font-family: "Segoe UI";
+    height: 10rem;
+    resize: none;
+    padding: 1rem;
+}
+  
+.textarea:focus,  
+.textbox:focus {
+    border-radius: 0.6rem;
+    border: 1px solid var(--primary);
+    outline: none;
+}
+  
+.textarea::placeholder,
+.textbox::placeholder {
+    font-family: "Segoe UI";
+}
+  
+  
