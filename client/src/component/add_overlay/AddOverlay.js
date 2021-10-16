@@ -1,62 +1,87 @@
 import React, { useEffect, useState } from 'react';
+import { useConnection } from '../ConnectionProvider';
+import ConnectOverlay from '../connect_overlay/ConnectOverlay';
 import { Box } from '../utils/Box';
 import './add_overlay.scss';
 import './textfield.scss';
 
 function AddOverlay(props) {
-    const { web3, accounts, appContract, setAddress, setOpenMenu } = props;
+    const { connectionState, setConnectionState } = useConnection();
+    const { accounts, appContract } = connectionState;
+    const { openMenu, setOpenMenu } = props;
 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [options, setOptions] = useState(["Yay", "Nah"]);
+    const [optionList, setOptionList] = useState(["Yay", "Nah"]);
+    const [error, setError] = useState({ title: null, description: null, optionIndex: null });
 
     useEffect(() => {
         // Set default values for options
         Array.from(document.getElementsByClassName('option-field')).map((element, idx) => {
-            element.setAttribute('value', options[idx]);
+            element.setAttribute('value', optionList[idx]);
+            return null;
         });
     }, []);
 
     const handleCreate = async () => {
+        var t = false, d = false, o = -1;
         if (title === "") {
-            alert('Title Empty');
-            return;
+            t = true;
         }
         if (description === "") {
-            alert('Description Empty');
-            return;
+            d = true;
         }
-        for (var option in options) {
-            if (option === "") {
-                alert('Option Empty');
-                return;
+        for (var i = 0; i < optionList.length; i++) {
+            if (optionList[i] === "") {
+                o = i;
+                break;
             }
         }
-        // try {
-        // Deploy poll contract
-        const transaction = await appContract.methods.createPoll(title, description, options).send({ from: accounts[0] });
+        if (t || d || o != -1) {
+            setError({ title: t === true && 'Title Empty', description: d === true && 'Description Empty', optionIndex: o });
+            return;
+        }
 
-        // Access logs from transaction
-        const event = transaction.events.PollCreated.returnValues;
+        try {
+            // Deploy poll contract
+            const transaction = await appContract.methods.createPoll(title, description, optionList).send({ from: accounts[0] });
 
-        //TODO: show snackbar 
-        console.log('Poll contract deployed at ' + event.pollAddress + ' by ' + event.ownerAddress);
+            // Access logs from transaction
+            const event = transaction.events.PollCreated.returnValues;
 
-        // Close Add Poll overlay
-        setOpenMenu(false);
+            //TODO: show snackbar 
+            console.log('Poll contract deployed at ' + event.pollAddress + ' by ' + event.ownerAddress);
 
-        // Redirect to that poll page
-        setAddress(event.pollAddress);
+            // Close Add Poll overlay
+            setOpenMenu(false);
 
-        // } catch (err) {
-        //     console.log('Error while creating poll contract', err);
-        // }
+            // Redirect to that poll page
+            setConnectionState({
+                ...connectionState,
+                poll: {
+                    pollAddress: event.pollAddress,
+                    title,
+                    description,
+                    _owner: accounts[0],
+                    nOptions: optionList.length,
+                    totalVotes: 0,
+                    hasUserVoted: false,
+                    isResultAnnounced: false,
+                    optionList: optionList
+                }
+            });
+
+        } catch (err) {
+            console.log('Error while creating poll contract', err);
+        }
     }
 
     return (
         <div>
             <div className="blur-overlay"></div>
             <div className="add-poll">
+                {openMenu && accounts.length === 0 && <ConnectOverlay />}
+
                 <Box height="100" />
 
                 <h2 className="heading">Add Poll</h2>
@@ -69,10 +94,11 @@ function AddOverlay(props) {
                         id="title-field"
                         className="textbox"
                         placeholder="Poll Title"
-                        onChange={(event) => { setTitle(event.target.value) }}
+                        onChange={(event) => { setTitle(event.target.value); setError({ ...error, title: null }) }}
                         onKeyDown={(e) => { if (e.key === 'Enter') { handleCreate() } }} required
                     />
                 </div>
+                {error.title && <div className="error-field">{error.title}</div>}
 
                 <Box height="10" />
 
@@ -81,10 +107,12 @@ function AddOverlay(props) {
                     <textarea
                         className="textarea"
                         placeholder="What's this poll about ?"
-                        onChange={(event) => { setDescription(event.target.value) }}
+                        onChange={(event) => { setDescription(event.target.value); setError({ ...error, description: null }) }}
                         onKeyDown={(e) => { if (e.key === 'Enter') { handleCreate() } }} required
                     />
                 </div>
+                {error.description && <div className="error-field">{error.description}</div>}
+
 
                 <Box height="10" />
 
@@ -92,7 +120,7 @@ function AddOverlay(props) {
 
                 <Box height="5" />
 
-                {options.map((element, idx) =>
+                {optionList.map((element, idx) =>
                     <div key={idx}>
                         <div className="option-flex">
                             <div className="option-no">{String.fromCharCode(65 + idx)}</div>
@@ -101,14 +129,38 @@ function AddOverlay(props) {
                                 type="text"
                                 placeholder={"Option " + (idx + 1)}
                                 onChange={(event) => {
-                                    let tempList = options;
+                                    let tempList = optionList;
                                     tempList[idx] = event.target.value
-                                    setOptions(tempList);
+                                    setOptionList(tempList);
+                                    setError({ ...error, optionIndex: error.optionIndex === idx ? -1 : error.optionIndex })
                                 }}
                                 required
                             />
+                            {/* {console.log(idx, error)} */}
+                            {<div className='delete-option' onClick={() => {
+                                setOptionList(optionList.splice(idx, 1));
+                                console.log('After deleting ', idx, ' ', optionList)
+                            }}>X</div>}
+                            {/* {error.optionIndex === idx ? <div className="error-field">Empty Option</div> : '....F'} */}
                         </div>
-                        <Box height="10" />
+
+                        {idx === (optionList.length - 1) &&
+                            <div className="option-flex disabled">
+                                <div className="option-no">{String.fromCharCode(65 + idx + 1)}</div>
+                                <input
+                                    className="option-field-d"
+                                    type="text"
+                                    placeholder={"Add Option"}
+                                    onClick={() => {
+                                        console.log('clicked')
+                                        let tempList = optionList;
+                                        tempList.push('Option ' + (optionList.length + 1));
+                                        setOptionList(tempList);
+                                        console.log(optionList);
+                                    }}
+                                />
+                            </div>
+                        }
                     </div>
                 )}
 

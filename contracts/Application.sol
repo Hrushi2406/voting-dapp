@@ -63,6 +63,7 @@ contract Application {
             string memory title,
             string memory description,
             address _owner,
+            uint256 nOptions,
             bool isResultAnnounced,
             uint256 totalVotes,
             bool hasUserVoted
@@ -78,6 +79,7 @@ contract Application {
             _poll.title(),
             _poll.description(),
             _poll.owner(),
+            _poll.nOptions(),
             _poll.isResultAnnounced(),
             _poll.totalVotes(),
             _hasUserVoted

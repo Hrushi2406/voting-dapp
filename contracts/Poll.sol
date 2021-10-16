@@ -23,23 +23,26 @@ contract Poll {
         uint256 count;
     }
 
-    // Mapping for counting votes to each option
-    mapping(uint256 => Option) public optionCounts;
-
     // Number of options
     uint256 public nOptions = 0;
 
+    // Mapping for counting votes to each option
+    mapping(uint256 => Option) private optionCounts;
+
+    // Mapping for counting votes to each option
+    mapping(uint256 => Option) public optionCountsPublic;
+
     // Index of option with max votes
-    uint256 public maxVotesIndex = 0;
+    uint256 private maxVotesIndex = 0;
 
     // Current max votes to any option
-    uint256 public maxVotes = 0;
+    uint256 private maxVotes = 0;
 
     // Total votes
     uint256 public totalVotes = 0;
 
     // Emitted when results are announced successfully
-    event ResultAnnounced(Option winnerOption, uint256 maxVotes);
+    event ResultAnnounced(Option winnerOption);
 
     constructor(
         address _owner,
@@ -87,7 +90,23 @@ contract Poll {
         // Mark result as announced
         isResultAnnounced = true;
 
+        // Create public mapping
+        for (uint256 i = 0; i < nOptions; i++) {
+            optionCountsPublic[i] = optionCounts[i];
+        }
+
         // Emit event along with result data
-        emit ResultAnnounced(optionCounts[maxVotesIndex], maxVotes);
+        emit ResultAnnounced(optionCounts[maxVotesIndex]);
+    }
+
+    function getOption(uint256 _index) public view returns (string memory) {
+        return optionCounts[_index].name;
+    }
+
+    function getResult() public view returns (Option memory) {
+        // Check if results already announced
+        require(isResultAnnounced, "Result not announced yet");
+
+        return optionCounts[maxVotesIndex];
     }
 }

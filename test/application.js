@@ -41,6 +41,7 @@ contract("Application", (accounts) => {
         assert.equal(poll.title, "Voting 201", "Wrong contract title")
         assert.equal(poll.description, "This is voting 201", "Wrong contract description")
         assert.equal(poll._owner, accounts[1], "Wrong contract owner")
+        assert.equal(poll.nOptions, 3, "Wrong number of options")
         assert.equal(poll.isResultAnnounced, false, "Contract result shows announced")
         assert.equal(poll.totalVotes.toNumber(), 0, "Wrong total votes")
         assert.equal(poll.hasUserVoted, false, "Shows user has voted")

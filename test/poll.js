@@ -20,7 +20,7 @@ contract("Poll", (accounts) => {
         const storedTitle = await pollInstance.title.call();
         const storedDescription = await pollInstance.description.call();
         const nOptions = await pollInstance.nOptions.call();
-        const storedOption = await pollInstance.optionCounts.call(0);
+        const firstOption = await pollInstance.getOption.call(0);
 
         // Check if stored data matches passed data
         assert.equal(owner, accounts[0], "Owner does not match");
@@ -31,22 +31,19 @@ contract("Poll", (accounts) => {
             "Description does not match"
         );
         assert.equal(nOptions, 3, "No of options does not tally");
-        assert.equal(storedOption.name, "sumit", "First option does not match");
+        assert.equal(firstOption, "sumit", "First option does not match");
     });
 
     it("Can vote", async () => {
-        const prevState = await pollInstance.optionCounts.call(0);
+        const prevState = await pollInstance.voters.call(accounts[1]);
 
         // Vote for index 0 from account 1
         await pollInstance.vote(0, { from: accounts[1] });
-        const afterState = await pollInstance.optionCounts.call(0);
+        const afterState = await pollInstance.voters.call(accounts[1]);
 
-        // Check if vote count is increased
-        assert.equal(
-            prevState.count.toNumber() + 1,
-            afterState.count.toNumber(),
-            "Count is not raised"
-        );
+        // Check if voters mapping is updated
+        assert.equal(prevState, false, "Prev state wrong");
+        assert.equal(afterState, true, "After state wrong");
     });
 
     it("Same address can't vote twice", async () => {
@@ -64,6 +61,15 @@ contract("Poll", (accounts) => {
             await pollInstance.announceResult({ from: accounts[1] });
         } catch (err) {
             assert.include(err.toString(), "Only owner can announce result");
+        }
+    });
+
+    it("Can't get result before it is announced", async () => {
+        try {
+            // Try announcing results from non-owner account
+            await pollInstance.getResult.call();
+        } catch (err) {
+            assert.include(err.toString(), "Result not announced yet");
         }
     });
 
@@ -87,7 +93,6 @@ contract("Poll", (accounts) => {
             1,
             "Winner vote count does not match"
         );
-        assert.equal(log.args.maxVotes, 1, "Max vote count does not match");
 
         // Check if flag set
         const isResultAnnounced = await pollInstance.isResultAnnounced.call();
@@ -101,5 +106,18 @@ contract("Poll", (accounts) => {
         } catch (err) {
             assert.include(err.toString(), "Cannot vote after result announcement");
         }
+    });
+
+    it("Can check result after results announced", async () => {
+        const winner = await pollInstance.getResult.call();
+        const winner1 = await pollInstance.optionCountsPublic.call(0);
+
+        assert.equal(winner.name, "sumit", "Winner does not match");
+        assert.equal(winner1.name, "sumit", "Winner via optionCountsPublic does not match");
+        assert.equal(
+            winner.count,
+            1,
+            "Winner vote count does not match"
+        );
     });
 });

@@ -25,6 +25,7 @@
 }
 
 .add-poll-c {
+    position: fixed;
     transform: translateX(-100vw);
 }
 
@@ -33,12 +34,13 @@
     justify-content: space-between;
     align-items: center;
     width: 300px;
+    padding: 5px 0px;
 
     .option-no {
         font-size: var(--sm-content-size);
     }
 
-    .option-field {
+    .option-field, .option-field-d {
         outline: none;
         height: 3rem;
         font-size: var(--sm-content-size);
@@ -54,4 +56,19 @@
     .option-field:focus {
         border-bottom: 0.15rem solid var(--primary);
     }
+
+    .delete-option {
+        margin: 0% 10px;
+        cursor: pointer;
+        font-weight: 100;
+    }
+
+    .delete-option:hover {
+        font-weight: 400;
+        color: var(--primary);
+    }
+}
+
+.disabled {
+    background-color: rgba(255,255,255,0.5);
 }

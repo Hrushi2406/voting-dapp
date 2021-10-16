@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
-import useContract from "./component/use_contract";
-import HomePage from "./pages/home/Home";
-import PollPage from "./pages/poll/Poll";
+import React from "react";
+import HomePage from "./pages/home_page/HomePage";
+import PollPage from "./pages/poll_page/PollPage";
 import Navbar from "./component/navbar/Navbar";
+import Loading from "./component/utils/loading/Loading";
+import { useConnection } from "./component/ConnectionProvider";
 
 function App() {
-  const { web3, accounts, appContract, errors } = useContract();
 
-  // Contract address for poll page
-  const [address, setAddress] = useState('Home');
+  const { connectionState } = useConnection();
+
+  const { web3, poll, errors } = connectionState;
 
   if (errors) {
     alert(errors);
@@ -16,15 +17,15 @@ function App() {
   }
 
   if (!web3) {
-    return <div>Loading Web3, accounts, and contract...</div>;
+    return <Loading page="app" />;
   }
 
   return (
     <div>
-      <Navbar web3={web3} accounts={accounts} appContract={appContract} setAddress={setAddress} />
-      {address == 'Home' ?
-        <HomePage web3={web3} accounts={accounts} appContract={appContract} setAddress={setAddress} /> :
-        <PollPage web3={web3} accounts={accounts} address={address} setAddress={setAddress} />
+      <Navbar />
+      {poll === 'Home' ?
+        <HomePage /> :
+        <PollPage />
       }
     </div>
   );

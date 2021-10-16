@@ -1,0 +1,15 @@
+.chip-container {
+    width: 100px;
+    padding: 5px;
+    border-radius: 5px;
+    text-align: center;
+    // cursor: pointer;
+}
+
+.chip-content {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+}

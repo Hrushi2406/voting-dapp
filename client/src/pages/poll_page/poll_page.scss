@@ -1,0 +1,31 @@
+.description {
+  font-size: var(--content-size);
+  font-weight: 400;
+}
+
+.options-parent {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+  
+.options-div {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  background-color: #f0f0f0;
+  border-radius: 1rem;
+  font-size: var(--content-size);
+  transition: all 750ms;
+  cursor: pointer;
+}
+  
+.selected {
+  background-color: var(--primary);
+  color: white;
+  font-size: calc(1.2 * var(--content-size));
+  box-shadow: 0 4px 20px 2px rgba(0, 0, 0, 0.25);
+}
+  
