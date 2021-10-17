@@ -1,15 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { useConnection } from '../ConnectionProvider';
-import ConnectOverlay from '../connect_overlay/ConnectOverlay';
+import ConnectOverlay from '../ConnectOverlay';
 import { Box } from '../utils/Box';
-import './add_overlay.scss';
+import Loading from '../utils/loading/Loading';
+import './add_poll.scss';
 import './textfield.scss';
 
-function AddOverlay(props) {
+function AddPoll(props) {
     const { connectionState, setConnectionState } = useConnection();
     const { accounts, appContract } = connectionState;
     const { openMenu, setOpenMenu } = props;
 
+    // To avoid sending multiple transactions while one is already sent
+    const [isTransaction, setTransaction] = useState(false);
+
+    // Poll Data input 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [optionList, setOptionList] = useState(["Yay", "Nah"]);
@@ -24,6 +29,7 @@ function AddOverlay(props) {
     }, []);
 
     const handleCreate = async () => {
+        setError({});
         var t = false, d = false, o = -1;
         if (title === "") {
             t = true;
@@ -43,41 +49,49 @@ function AddOverlay(props) {
         }
 
         try {
-            // Deploy poll contract
-            const transaction = await appContract.methods.createPoll(title, description, optionList).send({ from: accounts[0] });
+            if (!isTransaction) {
+                setTransaction(true);
+                // Deploy poll contract
+                const transaction = await appContract.methods.createPoll(title, description, optionList).send({ from: accounts[0] });
 
-            // Access logs from transaction
-            const event = transaction.events.PollCreated.returnValues;
+                // Access logs from transaction
+                const event = transaction.events.PollCreated.returnValues;
 
-            //TODO: show snackbar 
-            console.log('Poll contract deployed at ' + event.pollAddress + ' by ' + event.ownerAddress);
+                //TODO: show snackbar 
+                console.log('Poll contract deployed at ' + event.pollAddress + ' by ' + event.ownerAddress);
 
-            // Close Add Poll overlay
-            setOpenMenu(false);
+                // Close Add Poll overlay
+                setOpenMenu(false);
 
-            // Redirect to that poll page
-            setConnectionState({
-                ...connectionState,
-                poll: {
-                    pollAddress: event.pollAddress,
-                    title,
-                    description,
-                    _owner: accounts[0],
-                    nOptions: optionList.length,
-                    totalVotes: 0,
-                    hasUserVoted: false,
-                    isResultAnnounced: false,
-                    optionList: optionList
-                }
-            });
-
+                // Redirect to that poll page
+                setConnectionState({
+                    ...connectionState,
+                    poll: {
+                        pollAddress: event.pollAddress,
+                        title,
+                        description,
+                        _owner: accounts[0],
+                        nOptions: optionList.length,
+                        totalVotes: 0,
+                        hasUserVoted: false,
+                        isResultAnnounced: false,
+                        optionList: optionList
+                    }
+                });
+                setTransaction(false);
+            }
         } catch (err) {
+            setTransaction(false);
+            setError({ ...error, button: 'Denied Metmask Transaction signature' })
             console.log('Error while creating poll contract', err);
         }
     }
 
     return (
         <div>
+            {isTransaction && <div className="blur-bg" style={{ zIndex: 3 }}>
+                <Loading />
+            </div>}
             <div className="blur-overlay"></div>
             <div className="add-poll">
                 {openMenu && accounts.length === 0 && <ConnectOverlay />}
@@ -123,7 +137,8 @@ function AddOverlay(props) {
                 {optionList.map((element, idx) =>
                     <div key={idx}>
                         <div className="option-flex">
-                            <div className="option-no">{String.fromCharCode(65 + idx)}</div>
+                            {/* String.fromCharCode(65 + idx) */}
+                            <div className="option-no">{(idx + 1)}</div>
                             <input
                                 className="option-field"
                                 type="text"
@@ -141,12 +156,13 @@ function AddOverlay(props) {
                                 setOptionList(optionList.splice(idx, 1));
                                 console.log('After deleting ', idx, ' ', optionList)
                             }}>X</div>}
-                            {/* {error.optionIndex === idx ? <div className="error-field">Empty Option</div> : '....F'} */}
+                            {/* {error.optionIndex === idx ? <div className="error-field">Empty Option</div> : 'Empty Option'} */}
                         </div>
 
                         {idx === (optionList.length - 1) &&
                             <div className="option-flex disabled">
-                                <div className="option-no">{String.fromCharCode(65 + idx + 1)}</div>
+                                {/* String.fromCharCode(65 + idx + 1) */}
+                                <div className="option-no">{(idx + 2)}</div>
                                 <input
                                     className="option-field-d"
                                     type="text"
@@ -167,9 +183,10 @@ function AddOverlay(props) {
                 <Box height="20" />
 
                 <button className="clickable" onClick={handleCreate}>Create</button>
+                {error.button && <div className="error-field">{error.button}</div>}
             </div>
         </div>
     );
 }
 
-export default AddOverlay;
+export default AddPoll;

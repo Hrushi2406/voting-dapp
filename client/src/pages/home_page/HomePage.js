@@ -25,6 +25,7 @@ function HomePage() {
             let tempList = [];
             for (let i = 0; i < nPolls; i++) {
                 const poll = await appContract.methods.getPollOverview(i, accounts.length > 0 ? accounts[0] : "0x0000000000000000000000000000000000000000").call();
+                poll.index = i;
                 tempList.push(poll);
             }
             setPollList(tempList);
@@ -37,7 +38,7 @@ function HomePage() {
         fetchData();
     }, []);
 
-
+    // On accounts changed Refetch
     useEffect(() => {
         fetchData();
     }, [accounts]);
@@ -55,21 +56,23 @@ function HomePage() {
 
             <Box height="40" />
 
-            {pollList.length !== 0 ? <div className="poll-grid">
-                {pollList.map((poll, idx) =>
-                    <div key={idx} className="poll-card clickable" onClick={() => { setConnectionState({ ...connectionState, poll: poll }) }}>
-                        <h3 className="title">{poll.title}</h3>
-                        <p className="description">{poll.description}</p>
-                        <div className="chip-flex">
-                            <Chip color='var(--primary)' content={poll._owner} />
-                            <Box width="10" />
-                            <Chip color={poll.isResultAnnounced ? 'red' : 'green'} content={poll.isResultAnnounced ? 'Ended' : 'Live'} />
+            {pollList.length !== 0 ?
+                <div className="poll-grid">
+                    {pollList.map((poll, idx) =>
+                        <div key={idx} className="poll-card clickable" onClick={() => { setConnectionState({ ...connectionState, poll: poll }) }}>
+                            <h3 className="title">{poll.title}</h3>
+                            <p className="description">{poll.description}</p>
+                            <div className="chip-flex">
+                                {/* <Chip bgColor='var(--primary)' textColor="white" content={poll._owner} />
+                                <Box width="10" /> */}
+                                <Chip bgColor={poll.isResultAnnounced ? 'red' : 'green'} textColor="white" content={poll.isResultAnnounced ? 'Ended' : 'Live'} />
+                            </div>
+                            <p className="description">{poll.totalVotes} have voted</p>
+                            {poll.hasUserVoted ? <p className="voted">You have already voted</p> : poll.isResultAnnounced ? <p className="declared">Results declared</p> : <div className="vote-div">Vote</div>}
                         </div>
-                        <p className="description">{poll.totalVotes} have voted</p>
-                        {poll.hasUserVoted ? <p className="voted">You have already voted</p> : poll.isResultAnnounced ? <p className="declared">Results declared</p> : <div className="vote-div">Vote</div>}
-                    </div>
-                )}
-            </div> : <div className="no-polls">No polls</div>}
+                    )}
+                </div>
+                : <div className="no-polls">No polls</div>}
 
             <Box height="30" />
         </div>

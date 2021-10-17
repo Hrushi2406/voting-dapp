@@ -1,12 +1,11 @@
 import React from 'react';
-import { useConnection } from '../ConnectionProvider';
-import './connect_overlay.scss'
+import { useConnection } from './ConnectionProvider';
 
 function ConnectOverlay() {
     const { connectWallet } = useConnection()
 
     return (
-        <div className="blur-connect">
+        <div className="blur-bg">
             <button className="clickable center" onClick={connectWallet}>Connect</button>
         </div>
     );

@@ -1,3 +1,5 @@
+const { assert } = require("chai");
+
 const Application = artifacts.require("./Application.sol");
 const Poll = artifacts.require("./Poll.sol");
 
@@ -64,13 +66,21 @@ contract("Poll", (accounts) => {
         }
     });
 
-    it("Can't get result before it is announced", async () => {
+    it("Can't get winner before it is announced", async () => {
         try {
             // Try announcing results from non-owner account
-            await pollInstance.getResult.call();
+            await pollInstance.getWinner.call();
         } catch (err) {
             assert.include(err.toString(), "Result not announced yet");
         }
+    });
+
+    it("Can't get result before it is announced", async () => {
+        const option = await pollInstance.results.call(0);
+
+        assert.equal(option.name, "", "Result is returned before announcing")
+        assert.equal(option.count.toNumber(), 0, "Result is returned before announcing")
+
     });
 
     it("Owner can announce result", async () => {
@@ -108,12 +118,12 @@ contract("Poll", (accounts) => {
         }
     });
 
-    it("Can check result after results announced", async () => {
-        const winner = await pollInstance.getResult.call();
-        const winner1 = await pollInstance.optionCountsPublic.call(0);
+    it("Can get result after results announced", async () => {
+        const winner = await pollInstance.getWinner.call();
+        const winner1 = await pollInstance.results.call(0);
 
         assert.equal(winner.name, "sumit", "Winner does not match");
-        assert.equal(winner1.name, "sumit", "Winner via optionCountsPublic does not match");
+        assert.equal(winner1.name, "sumit", "Winner via results does not match");
         assert.equal(
             winner.count,
             1,

@@ -5,6 +5,7 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import { ConnectionProvider } from './component/ConnectionProvider';
 
+// Wrapped in ConnectionProvider to get a global state using context API
 ReactDOM.render(<ConnectionProvider><App /></ConnectionProvider>, document.getElementById('root'));
 
 // If you want your app to work offline and load faster, you can change

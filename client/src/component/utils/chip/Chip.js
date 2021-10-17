@@ -9,8 +9,8 @@ function Chip(props) {
     }
 
     return (
-        <div onClick={copyAddress} style={{ backgroundColor: props.color }} className={"chip-container " + props.class}>
-            <p className="chip-content">{props.content}</p>
+        <div className="chip-container" onClick={copyAddress} style={{ backgroundColor: props.bgColor }} >
+            <p className="chip-content" style={{ color: props.textColor }}>{props.content}</p>
         </div>
     );
 }
