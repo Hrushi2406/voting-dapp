@@ -5,9 +5,9 @@ import Navbar from "./component/navbar/Navbar";
 import Loading from "./component/utils/loading/Loading";
 import { useConnection } from "./component/ConnectionProvider";
 import SwitchNetwork from "./component/SwitchNetwork";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 
 function App() {
-
   const { connectionState } = useConnection();
 
   const { web3, poll, errors } = connectionState;
@@ -26,14 +26,17 @@ function App() {
   return (
     <div>
       <Navbar />
+
+      <Router>
+        <Routes>
+          <Route path="/" exact element={<HomePage />} />
+          <Route path="/:address" exact element={<PollPage />} />
+        </Routes>
+      </Router>
       {/* If poll object from global state contains a poll's data, load PollPage else HomePage */}
-      {poll === 'Home' ?
-        <HomePage /> :
-        <PollPage />
-      }
+      {/* {poll === "Home" ? <HomePage /> : <PollPage />} */}
     </div>
   );
-
 }
 
 export default App;
