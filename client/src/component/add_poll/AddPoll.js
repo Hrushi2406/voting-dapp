@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useConnection } from "../ConnectionProvider";
 import ConnectOverlay from "../ConnectOverlay";
-import formatError from "../format_error";
 import { Box } from "../utils/Box";
 import Loading from "../utils/loading/Loading";
 import "./add_poll.scss";
@@ -20,11 +19,12 @@ function AddPoll(props) {
   const { connectionState, setConnectionState } = useConnection();
   const { accounts, appContract } = connectionState;
   const { openMenu, setOpenMenu } = props;
+  const navigate = useNavigate();
 
   // Poll Data input
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [optionList, setOptionList] = useState([]);
+  const [optionList, setOptionList] = useState(["Yae", "Nae"]);
 
   // For validation errors
   const [error, setError] = useState({
@@ -117,17 +117,19 @@ function AddPoll(props) {
         //TODO: show snackbar
         console.log(
           "Poll contract deployed at " +
-            event.pollAddress +
-            " by " +
-            event.ownerAddress
+          event.pollAddress +
+          " by " +
+          event.ownerAddress
         );
         setTitle("");
         setDescription("");
-        setOptionList([]);
+        setOptionList(["Yae", "Nae"]);
+
+        document.getElementById("title-field").value = "";
+        document.getElementById("description-field").value = "";
 
         // Close Add Poll overlay
         setOpenMenu(false);
-        // navigate("/", { replace: true });
 
         // Redirect to that poll page
         setConnectionState({
@@ -144,6 +146,8 @@ function AddPoll(props) {
             optionList: optionList,
           },
         });
+        navigate("/" + event.pollAddress);
+
         setTransaction(false);
       }
     } catch (err) {
@@ -199,6 +203,7 @@ function AddPoll(props) {
           <p className="label">Description</p>
           <textarea
             className="textarea"
+            id="description-field"
             placeholder="What's this poll about ?"
             onChange={(event) => {
               setDescription(event.target.value);
@@ -248,6 +253,9 @@ function AddPoll(props) {
               <div
                 className="delete-option"
                 onClick={() => {
+                  if (optionList.length == 2) {
+                    return;
+                  }
                   setOptionList(
                     optionList.filter((item, index) => index !== idx)
                   );

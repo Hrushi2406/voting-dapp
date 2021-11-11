@@ -22,6 +22,8 @@
   height: 10rem;
   resize: none;
   padding: 1rem;
+  font-size: var(--sm-content-size);
+
 }
 
 .textarea:focus,
@@ -33,5 +35,6 @@
 
 .textarea::placeholder,
 .textbox::placeholder {
+  font-size: var(--sm-content-size);
   font-family: "Circular";
 }

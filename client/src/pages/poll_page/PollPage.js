@@ -50,27 +50,22 @@ function PollPage() {
         setPollData(poll);
       } else {
         // Set results
-        console.log("1");
         let tempList = [];
         for (let i = 0; i < poll.nOptions; i++) {
           let option = await pollContract.methods.results(i).call();
           tempList.push(option);
         }
-        console.log("2");
 
         // Get winner
         const winner = await pollContract.methods.getWinner().call();
-        console.log("3");
 
-        poll.winner = winner;
+        poll.winner = winner.name;
         poll.optionList = tempList;
 
         const list = poll.optionList.sort((a, b) =>
           a.count > b.count ? -1 : 1
         );
-        console.log(list);
         setresultList(list);
-        console.log(poll.optionList);
         setPollData(poll);
       }
 
@@ -100,7 +95,7 @@ function PollPage() {
 
         await polc.methods.vote(voteOption).send({ from: accounts[0] });
 
-        setConnectionState({ ...connectionState, poll: "Home" });
+        setConnectionState({ ...connectionState, poll: { ...poll, hasUserVoted: true, totalVotes: poll.totalVotes + 1 } });
 
         setTransaction(false);
       }
@@ -114,6 +109,10 @@ function PollPage() {
   // Announce Result
   const handleAnnounce = async () => {
     seterror({});
+    if (poll.totalVotes == 0) {
+      seterror({ announce: "No one has voted yet" });
+      return;
+    }
     try {
       // To avoid sending multiple transactions
       if (!isTransaction) {
@@ -128,11 +127,31 @@ function PollPage() {
         //TODO: show snackbar
         console.log(
           "Winner is " +
-            event.winnerOption.name +
-            " with " +
-            event.winnerOption.count +
-            " votes"
+          event.winnerOption.name +
+          " with " +
+          event.winnerOption.count +
+          " votes"
         );
+        // setConnectionState({ ...connectionState, poll: { ...poll, isResultAnnounced: true } });
+        poll.isResultAnnounced = true;
+
+        let tempList = [];
+        for (let i = 0; i < poll.nOptions; i++) {
+          let option = await polc.methods.results(i).call();
+          tempList.push(option);
+        }
+
+        // Get winner
+        const winner = await polc.methods.getWinner().call();
+
+        poll.winner = winner.name;
+        poll.optionList = tempList;
+
+        const list = poll.optionList.sort((a, b) =>
+          a.count > b.count ? -1 : 1
+        );
+        setresultList(list);
+        setPollData(poll);
 
         setTransaction(false);
       }
@@ -169,7 +188,7 @@ function PollPage() {
         ← Back to Home
       </p>
 
-      <Box height="10" />
+      <Box height="20" />
 
       <div className="space-between">
         <h2 className="heading">{pollData.title}</h2>
@@ -204,10 +223,10 @@ function PollPage() {
           <div className="flex">
             <button
               className="clickable btn "
-              disabled={voteOption == null}
+              disabled={voteOption == null || poll.hasUserVoted}
               onClick={handleVote}
             >
-              Vote
+              {poll.hasUserVoted ? "Already Voted" : "Vote"}
             </button>
 
             {accounts.length > 0 && pollData._owner === accounts[0] && (

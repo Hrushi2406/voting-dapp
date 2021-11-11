@@ -108,6 +108,7 @@ contract Poll {
     function getWinner() public view returns (Option memory) {
         // Check if results already announced
         require(isResultAnnounced, "Result not announced yet");
+        require(totalVotes > 0, "No one has voted yet");
 
         return optionCounts[maxVotesIndex];
     }

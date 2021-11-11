@@ -25,9 +25,9 @@ function App() {
 
   return (
     <div>
-      <Navbar />
 
       <Router>
+        <Navbar />
         <Routes>
           <Route path="/" exact element={<HomePage />} />
           <Route path="/:address" exact element={<PollPage />} />

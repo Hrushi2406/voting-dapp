@@ -49,12 +49,12 @@ function HomePage() {
 
   useEffect(() => {
     fetchData();
-  }, [accounts]);
+  }, []);
 
   // On accounts changed Refetch
-  // useEffect(() => {
-  //     fetchData();
-  // }, [accounts]);
+  useEffect(() => {
+    fetchData();
+  }, [accounts]);
 
   if (isLoading) {
     return <Loading page="home" />;
