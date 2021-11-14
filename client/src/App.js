@@ -15,7 +15,7 @@ function App() {
   // Mostly due to wrong network
   if (errors) {
     console.log(errors);
-    return <SwitchNetwork />;
+    return <SwitchNetwork msg={errors} />;
   }
 
   // Loading animation while webpage loads contract data
@@ -30,7 +30,7 @@ function App() {
         <Navbar />
         <Routes>
           <Route path="/" exact element={<HomePage />} />
-          <Route path="/:address" exact element={<PollPage />} />
+          <Route path="/:index" exact element={<PollPage />} />
         </Routes>
       </Router>
       {/* If poll object from global state contains a poll's data, load PollPage else HomePage */}

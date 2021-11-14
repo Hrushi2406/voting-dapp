@@ -1,4 +1,6 @@
 .chip-container {
+    display: grid;
+    place-content: center;
     width: 100px;
     padding: 5px;
     border-radius: 5px;

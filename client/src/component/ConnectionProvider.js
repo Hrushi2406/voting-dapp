@@ -2,6 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import Application from "../contracts/Application.json";
 import Web3 from "web3";
 
+// Rinkeby address : 0xA6d67d9bEB9CBE76F55047C99E0a7f51BdD50C36
+
+//TODO: Set test/production mode
+const isTest = process.env.REACT_APP_ISTEST === "yes";
+
 const ConnectionContext = React.createContext();
 
 export function useConnection() {
@@ -11,7 +16,7 @@ export function useConnection() {
 export function ConnectionProvider(props) {
   const [connectionState, setConnectionState] = useState({
     web3: null,
-    networkName: "Localhost",
+    networkName: isTest ? "Localhost" : "Rinkeby",
     accounts: [],
     appContract: null,
     errors: null,
@@ -23,7 +28,11 @@ export function ConnectionProvider(props) {
 
     try {
       // Use local web3 object by default before user connects metamask
-      const provider = new Web3.providers.HttpProvider("http://127.0.0.1:7545");
+      const provider = new Web3.providers.HttpProvider(
+        isTest ?
+          "http://127.0.0.1:7545" :
+          "https://rinkeby.infura.io/v3/" + process.env.REACT_APP_INFURA_KEY
+      );
       const web3 = new Web3(provider);
 
       const appContract = await createAppInstance(web3);
@@ -32,10 +41,16 @@ export function ConnectionProvider(props) {
         ...connectionState,
         web3,
         appContract,
-        networkName: "Localhost",
+        networkName: isTest ? "Localhost" : "Rinkeby",
       });
     } catch (e) {
       console.log("useConnection Error ", e);
+      if (e !== "Use Correct Network") {
+        e = "Can't connect to Rinkeby right now. Try again after some time"
+      } else {
+        e = "You are using wrong network. Switch to " + isTest ? "Localhost 7545" : "Rinkeby Testnet";
+      }
+
       setConnectionState({ ...connectionState, errors: e });
     }
   };
@@ -43,24 +58,36 @@ export function ConnectionProvider(props) {
   async function createAppInstance(web3) {
     if (web3) {
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = Application.networks[networkId];
+      console.log("IsTest: ", isTest);
+      if (isTest) {
+        // Localhost 7545
+        const deployedNetwork = Application.networks[networkId];
 
-      if (deployedNetwork) {
+        if (deployedNetwork) {
+          const newInstance = new web3.eth.Contract(
+            Application.abi,
+            deployedNetwork.address
+          );
+
+          return newInstance;
+        } else {
+          throw "Use Correct Network";
+        }
+      } else {
+        // Rinkeby
         const newInstance = new web3.eth.Contract(
           Application.abi,
-          deployedNetwork.address
+          process.env.REACT_APP_RINKEBY_CONTRACT_ADDRESS
         );
 
         return newInstance;
-      } else {
-        throw "Use Correct Network";
       }
     }
   }
 
   useEffect(() => {
     initiate();
-    connectWallet();
+    // connectWallet();
 
     // Detect metamask account change
     window.ethereum.on("accountsChanged", async function (_accounts) {
@@ -128,6 +155,9 @@ export function ConnectionProvider(props) {
         appContract,
       });
     } catch (e) {
+      if (e === "Use Correct Network") {
+        e = "You are using wrong network. Switch to " + (isTest ? "Localhost 7545" : "Rinkeby Testnet");
+      }
       console.log("useConnection Error ", e);
       setConnectionState({ ...connectionState, errors: e });
     }

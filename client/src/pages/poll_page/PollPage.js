@@ -6,11 +6,12 @@ import { Box } from "../../component/utils/Box";
 import Loading from "../../component/utils/loading/Loading";
 import Poll from "../../contracts/Poll.json";
 import "./poll_page.scss";
-import { useNavigate, useNavigationType } from "react-router-dom";
+import { useParams, useNavigate, useNavigationType } from "react-router-dom";
 
 function PollPage() {
   const { connectionState, setConnectionState } = useConnection();
-  const { web3, accounts, poll } = connectionState;
+  const { web3, accounts, appContract } = connectionState;
+  let { poll } = connectionState;
   const navigate = useNavigate();
 
   // Contract instance
@@ -26,8 +27,24 @@ function PollPage() {
   const [pollData, setPollData] = useState(poll);
   const [voteOption, setvoteOption] = useState(null);
 
+  const params = useParams();
+
   // Only to fetch list of options. Rest of the data comes from HomePage overview
   async function fetchData() {
+    if (poll === 'Home') {
+      setLoading(true);
+      poll = await appContract.methods
+        .getPollOverview(
+          parseInt(params.index),
+          accounts.length > 0
+            ? accounts[0]
+            : process.env.REACT_APP_RINKEBY_CONTRACT_ADDRESS
+        )
+        // "0x0000000000000000000000000000000000000000"
+        .call();
+      poll.index = parseInt(params.index);
+    }
+
     const pollContract = await new web3.eth.Contract(
       Poll.abi,
       poll.pollAddress
@@ -42,8 +59,12 @@ function PollPage() {
         // Set options
         let tempList = [];
         for (let i = 0; i < poll.nOptions; i++) {
-          let option = await pollContract.methods.getOption(i).call();
-          tempList.push(option);
+          try {
+            let option = await pollContract.methods.getOption(i).call();
+            tempList.push(option);
+          } catch (e) {
+            console.log(e);
+          }
         }
 
         poll.optionList = tempList;
@@ -76,10 +97,20 @@ function PollPage() {
   useEffect(() => {
     // Fetch only optionList when coming from HomePage.
     // If coming from AddOverlay, all the information is already there
-    if (!poll.optionList) {
+    if (poll === 'Home' || !poll.optionList) {
       fetchData();
     }
+    document.title = poll.title;
   }, []);
+
+  useEffect(() => {
+    // Fetch only optionList when coming from HomePage.
+    // If coming from AddOverlay, all the information is already there
+    if (poll === 'Home' || !poll.optionList) {
+      fetchData();
+    }
+    document.title = poll.title;
+  }, [accounts]);
 
   // Vote
   const handleVote = async () => {
@@ -171,7 +202,7 @@ function PollPage() {
       {/* If a transaction is already sent */}
       {isTransaction && (
         <div className="blur-bg" style={{ zIndex: 3 }}>
-          <Loading />
+          <Loading tx={true} />
         </div>
       )}
       {/* If not connected to metamask */}

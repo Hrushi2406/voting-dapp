@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import AddPoll from '../add_poll/AddPoll';
+import CreatePoll from '../create_poll/CreatePoll';
 import { useConnection } from '../ConnectionProvider';
 import { Box } from '../utils/Box';
 import Chip from '../utils/chip/Chip';
@@ -24,8 +24,8 @@ function Navbar() {
 
         // For Add Poll Overlay
         // Slide from left Add screen
-        const addPoll = document.getElementsByClassName('add-poll')[0];
-        openMenu ? addPoll.classList.add('add-poll-c') : addPoll.classList.remove('add-poll-c');
+        const createPoll = document.getElementsByClassName('create-poll')[0];
+        openMenu ? createPoll.classList.add('create-poll-c') : createPoll.classList.remove('create-poll-c');
 
         // Blur background when Add overlay moves to left
         const blurOverlay = document.getElementsByClassName('blur-overlay')[0];
@@ -46,7 +46,7 @@ function Navbar() {
                     Pollz
                 </div>
                 <div className="nav-btn-flex">
-                    <Chip bgColor="var(--bg-color)" textColor="black" content={networkName} />
+                    <Chip bgColor="var(--bg-color)" textColor="black" content={networkName + (networkName === "Rinkeby" ? " 0xA6d...C36" : "")} />
 
                     <Box width="20" />
 
@@ -60,7 +60,7 @@ function Navbar() {
                     </div>
                 </div>
             </nav>
-            <AddPoll web3={web3} accounts={accounts} appContract={appContract} openMenu={openMenu} setOpenMenu={setOpenMenu} />
+            <CreatePoll web3={web3} accounts={accounts} appContract={appContract} openMenu={openMenu} setOpenMenu={setOpenMenu} />
         </div>
     );
 }

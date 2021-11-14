@@ -33,7 +33,7 @@ function HomePage() {
             i,
             accounts.length > 0
               ? accounts[0]
-              : "0x0000000000000000000000000000000000000000"
+              : process.env.REACT_APP_RINKEBY_CONTRACT_ADDRESS
           )
           .call();
         poll.index = i;
@@ -78,7 +78,7 @@ function HomePage() {
               onClick={() => {
                 setConnectionState({ ...connectionState, poll: poll });
                 setTimeout(() => {
-                  navigate("/" + poll.pollAddress);
+                  navigate("/" + poll.index);
                 }, 150);
               }}
             >

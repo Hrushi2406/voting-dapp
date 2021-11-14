@@ -4,7 +4,7 @@ import { useConnection } from "../ConnectionProvider";
 import ConnectOverlay from "../ConnectOverlay";
 import { Box } from "../utils/Box";
 import Loading from "../utils/loading/Loading";
-import "./add_poll.scss";
+import "./create_poll.scss";
 import "./textfield.scss";
 
 function usePrevious(value) {
@@ -15,7 +15,7 @@ function usePrevious(value) {
   return ref.current;
 }
 
-function AddPoll(props) {
+function CreatePoll(props) {
   const { connectionState, setConnectionState } = useConnection();
   const { accounts, appContract } = connectionState;
   const { openMenu, setOpenMenu } = props;
@@ -46,7 +46,7 @@ function AddPoll(props) {
       (element, idx) => {
         // Set values for options from optionList
         element.setAttribute("value", optionList[idx]);
-        console.log(prevList, optionList);
+        // console.log(prevList, optionList);
         // Focus and select only when new option added
         if (prevList.length < optionList.length) {
           element.focus();
@@ -159,18 +159,22 @@ function AddPoll(props) {
 
   return (
     <div>
+      {/* Loading while Transaction is sent */}
       {isTransaction && (
         <div className="blur-bg" style={{ zIndex: 3 }}>
-          <Loading />
+          <Loading tx={true} />
         </div>
       )}
+      {/* Blurs left part as page slides from right */}
       <div className="blur-overlay"></div>
-      <div className="add-poll">
+      {/* Actual Page */}
+      <div className="create-poll">
+        {/* If not connected to metamask */}
         {openMenu && accounts.length === 0 && <ConnectOverlay />}
 
         <Box height="100" />
 
-        <h2 className="heading">Add Poll</h2>
+        <h2 className="heading">Create Poll</h2>
 
         <Box height="30" />
 
@@ -305,4 +309,4 @@ function AddPoll(props) {
   );
 }
 
-export default AddPoll;
+export default CreatePoll;

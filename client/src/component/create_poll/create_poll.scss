@@ -1,3 +1,4 @@
+// Blurs left part as page slides from right
 .blur-overlay {
   position: absolute;
   z-index: -1;
@@ -7,12 +8,11 @@
   width: 100vw;
   transition: all 250ms linear;
 }
-
 .blur-overlay-c {
   background-color: rgba(0, 0, 0, 0.25);
 }
 
-.add-poll {
+.create-poll {
   z-index: 1;
   position: absolute;
   left: 100%;
@@ -24,7 +24,7 @@
   transition: transform 250ms linear;
 }
 
-.add-poll-c {
+.create-poll-c {
   position: fixed;
   transform: translateX(-100vw);
 }
